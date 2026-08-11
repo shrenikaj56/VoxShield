@@ -1,0 +1,7 @@
+transaction_id,amount,beneficiary_type,device_known,transaction_time,location_anomaly,transaction_frequency,beneficiary_new,known_device,previous_fraud_history,tx_channel,normal_behavior
+TXN-0001,500,known,1,normal,0,regular,0,1,0,upi,1
+TXN-0002,15000,new,0,unusual,1,rare,1,0,0,upi,0
+TXN-0003,35000,new,0,unusual,1,rare,1,0,1,upi,0
+TXN-0004,2000,known,1,normal,0,regular,0,1,0,upi,1
+TXN-0005,6500,known,0,normal,0,regular,0,0,0,upi,1
+TXN-0006,25000,new,0,unusual,1,rare,1,0,1,upi,0
