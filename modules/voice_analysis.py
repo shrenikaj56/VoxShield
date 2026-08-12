@@ -79,18 +79,42 @@ def analyze_voice(transcript, api_key=None):
     }
 
 
-def audio_to_transcript(audio_path=None, transcript_text=None):
-    if transcript_text:
-        return transcript_text
+def audio_to_transcript(audio_path=None, transcript_text=None, api_key=None):
+    """
+    Convert uploaded audio into text using Gemini.
+    If transcript text is already provided, use it directly.
+    """
+
+    if transcript_text and transcript_text.strip():
+        return transcript_text.strip()
 
     if not audio_path:
         return ''
 
-    # Graceful fallback: no Whisper/OpenAI package assumptions.
+    api_key = api_key or os.getenv('GEMINI_API_KEY')
+
+    if not api_key:
+        return ''
+
     try:
-        import whisper
-        model = whisper.load_model('base')
-        result = model.transcribe(audio_path)
-        return result.get('text', '')
-    except Exception:
+        from google import genai
+
+        client = genai.Client(api_key=api_key)
+
+        uploaded_file = client.files.upload(file=audio_path)
+
+        response = client.models.generate_content(
+            model='gemini-3.6-flash',
+            contents=[
+                'Generate an accurate transcript of this audio. '
+                'Return only the spoken words. '
+                'Do not summarize or explain.',
+                uploaded_file
+            ]
+        )
+
+        return (response.text or '').strip()
+
+    except Exception as e:
+        print(f'Gemini audio transcription error: {e}')
         return ''
