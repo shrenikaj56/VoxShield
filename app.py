@@ -209,7 +209,7 @@ elif nav == 'Secure Payment':
         data=st.session_state['payment_data']; final=st.session_state['payment_result']['final']; level=final['level']; score=final['score']
         if level=='LOW':
             st.success('PAYMENT APPROVED'); st.metric('Risk Score',f'{score}/100'); st.markdown(f'### ₹{data["amount"]:,.0f} — {data["recipient"]}'); st.write('VoxShield security check passed.')
-            if st.button('CONTINUE TO PAY',use_container_width=True,type='primary'): st.session_state['payment_stage']='success'; st.rerun()
+            if st.button('CONTINUE TO PAY',use_container_width=True,type='primary',key='continue_low_payment'): st.session_state['payment_stage']='success'; st.rerun()
         elif level=='MEDIUM':
             st.warning('SECURITY ALERT'); st.metric('Risk Score',f'{score}/100'); st.write('Suspicious activity detected. Additional verification required.')
             c1,c2=st.columns(2)

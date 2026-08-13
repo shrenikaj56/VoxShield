@@ -22,3 +22,11 @@ sqlite-utils>=3.36.0
 # Gemini audio transcription
 google-genai>=1.0.0
 
+pandas
+numpy
+scikit-learn
+joblib
+matplotlib
+seaborn
+google-genai
+
