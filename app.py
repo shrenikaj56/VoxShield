@@ -209,7 +209,7 @@ elif nav == 'Secure Payment':
         data=st.session_state['payment_data']; final=st.session_state['payment_result']['final']; level=final['level']; score=final['score']
         if level=='LOW':
             st.success('PAYMENT APPROVED'); st.metric('Risk Score',f'{score}/100'); st.markdown(f'### ₹{data["amount"]:,.0f} — {data["recipient"]}'); st.write('VoxShield security check passed.')
-            if st.button('CONTINUE TO PAY',use_container_width=True,type='primary',key='continue_low_payment'): st.session_state['payment_stage']='success'; st.rerun()
+            if st.button('CONTINUE TO PAY',use_container_width=True,type='primary',key='continue_low_payment'): st.session_state['payment_stage']='auth';st.session_state['payment_auth_pattern'] = []; st.rerun()
         elif level=='MEDIUM':
             st.warning('SECURITY ALERT'); st.metric('Risk Score',f'{score}/100'); st.write('Suspicious activity detected. Additional verification required.')
             c1,c2=st.columns(2)
@@ -378,22 +378,11 @@ elif nav == 'Voice Analysis':
                 )
             else:
                 try:
-                    result = run_risk_engine(
-                        transaction={
-                            'amount': 5000,
-                            'beneficiary_new': False,
-                            'transaction_frequency': 'regular',
-                            'transaction_time': 'normal',
-                            'device_known': True,
-                            'location_anomaly': False,
-                            'previous_fraud_history': False,
-                        },
-                        voice_transcript=transcript_for_analysis,
-                        behavior=None,
-                        api_key=os.getenv('GEMINI_API_KEY')
-                    )
+                    voice_result = analyze_voice(transcript_for_analysis)
 
-                    st.session_state['voice_analysis'] = result['voice']
+                    st.session_state['voice_analysis'] = voice_result
+                    st.session_state['voice_transcript'] = transcript_for_analysis
+
                     st.success('Voice analysis completed.')
 
                 except Exception as exc:
@@ -417,12 +406,62 @@ elif nav == 'Voice Analysis':
 
     if 'voice_analysis' in st.session_state:
         analysis = st.session_state['voice_analysis']
+
         st.subheader('Voice Risk Output')
-        st.metric(
-            'Voice Risk Score',
-            f"{analysis.get('score', 0)}/100"
+
+        score = analysis.get('score', 0)
+        level = analysis.get('level', 'LOW')
+
+        c1, c2 = st.columns(2)
+
+        with c1:
+            st.metric(
+                'Voice Risk Score',
+                f'{score}/100'
+            )
+
+        with c2:
+            st.metric(
+                'Voice Risk Level',
+                level
+            )
+
+        st.subheader('Detected Signals')
+
+        features = analysis.get('features', {})
+
+        for feature_name, values in features.items():
+
+            if feature_name == 'transcript_length':
+                continue
+
+            if values:
+                st.markdown(
+                    f'**{feature_name.replace("_", " ").title()}**'
+                )
+
+                for value in values:
+                    st.markdown(f'- `{value}`')
+
+        st.subheader('Risk Reasons')
+
+        reasons = analysis.get('reasons', [])
+
+        if reasons:
+            for reason in reasons:
+                st.markdown(f'- {reason}')
+        else:
+            st.success('No scam indicators detected.')
+
+        st.subheader('Transcript Used for Analysis')
+
+        st.text_area(
+            'Generated transcript',
+            value=analysis.get('transcript', ''),
+            height=180,
+            disabled=True,
+            key='voice_analysis_transcript_display'
         )
-        st.json(analysis)
 
 # RISK ANALYSIS
 elif nav == 'Risk Analysis':
