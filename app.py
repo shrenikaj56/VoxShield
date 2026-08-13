@@ -10,6 +10,7 @@ from utils.helpers import incident_id, now_iso
 from modules.database import ensure_database, store_incident, fetch_recent_incidents
 from modules.risk_engine import run_risk_engine
 from modules.report_generator import generate_html_report, generate_pdf_report
+from modules.voice_analyzer import analyze_voice
 
 load_dotenv()
 
