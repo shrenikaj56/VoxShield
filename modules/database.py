@@ -73,9 +73,14 @@ def fetch_recent_incidents(limit=20):
     ensure_database()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    rows = conn.execute(
-        "SELECT * FROM incidents ORDER BY id DESC LIMIT ?",
-        (limit,)
+    if limit is None:
+        rows = conn.execute(
+            "SELECT * FROM incidents ORDER BY id DESC"
+    ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM incidents ORDER BY id DESC LIMIT ?",
+            (limit,)
     ).fetchall()
     conn.close()
     return [dict(row) for row in rows]

@@ -375,6 +375,12 @@ def run_payment_analysis(amount, beneficiary_new):
             "rapid_repeated_actions": True,
             "screen_sharing": True,
         }
+        context = {
+            "suspicious_call": True,
+            "screen_sharing": True,
+            "remote_control": False,
+            "unknown_caller": True,
+        }
     elif amount >= 5000 or beneficiary_new:
         frequency, tx_time, device_known, location_anomaly = (
             "rare",
@@ -390,6 +396,12 @@ def run_payment_analysis(amount, beneficiary_new):
             "transaction_timing": tx_time,
             "location_change": "none",
             "rapid_repeated_actions": False,
+        }
+        context = {
+            "suspicious_call": True,
+            "screen_sharing": False,
+            "remote_control": False,
+            "unknown_caller": beneficiary_new,
         }
     else:
         frequency, tx_time, device_known, location_anomaly = (
@@ -407,6 +419,12 @@ def run_payment_analysis(amount, beneficiary_new):
             "location_change": "none",
             "rapid_repeated_actions": False,
         }
+        context = {
+            "suspicious_call": False,
+            "screen_sharing": False,
+            "remote_control": False,
+            "unknown_caller": False,
+        }
     tx = {
         "amount": amount,
         "beneficiary_new": beneficiary_new,
@@ -422,6 +440,7 @@ def run_payment_analysis(amount, beneficiary_new):
         tx,
         voice_transcript=voice_context,
         behavior=behavior,
+        context=context,
         api_key=os.getenv("GEMINI_API_KEY"),
     )
 
@@ -622,10 +641,41 @@ elif nav == "Secure Payment":
         data = st.session_state["payment_data"]
         st.info("Analyzing payment security...")
         with st.spinner(
-            "Collecting transaction, voice, behavior and context signals..."
+            "Voxshield engine working,collecting transaction, voice, behavior and context signals..."
         ):
             result = run_payment_analysis(data["amount"], data["beneficiary_new"])
         st.session_state["payment_result"] = result
+        # Save only MEDIUM and HIGH payment incidents
+        final = result.get("final", {})
+        final_level = final.get("level", "LOW")
+
+        if final_level in ("MEDIUM", "HIGH"):
+            payment_incident_id = incident_id()
+
+            payment_record = {
+                "incident_id": payment_incident_id,
+                "timestamp": now_iso(),
+                "amount": data["amount"],
+                "beneficiary": data["recipient"],
+                "transaction_features": str(result.get("transaction", {})),
+                "transaction_risk": result.get("transaction", {}).get("score", 0),
+                "voice_risk": result.get("voice", {}).get("score", 0),
+                "behavior_risk": result.get("behavior", {}).get("score", 0),
+                "context_risk": result.get("context", {}).get("score", 0), 
+                "final_risk": final.get("score", 0),
+                "risk_level": final_level,
+                "decision": final.get("decision", ""),
+                "detected_reasons": str(final.get("reasons", {})),
+                "behavior_signals": str(result.get("behavior", {})),
+                "context_signals": str(result.get("context", {})),
+                "evidence_path": "",
+            }
+
+            store_incident(payment_record)
+
+            st.session_state["last_incident_id"] = payment_incident_id
+
+        
         save_last_result(result, data["amount"], data["recipient"])
         st.session_state["payment_stage"] = "result"
         st.rerun()
@@ -1655,7 +1705,7 @@ elif nav == "Fraud Dashboard":
     st.caption("Operational fraud prevention intelligence")
 
     try:
-        incidents = fetch_recent_incidents(limit=100)
+        incidents = fetch_recent_incidents(limit=None)
 
         if incidents:
 
@@ -1782,10 +1832,10 @@ elif nav == "Fraud Dashboard":
 # INCIDENT REPORT
 elif nav == "Incident Report":
 
-    ###st.markdown(
-    ##'<div class="vox-main-title">Incident Report</div>',
-    ##unsafe_allow_html=True
-    # )
+    st.markdown(
+        '<div class="vox-main-title">Incident Report</div>',
+        unsafe_allow_html=True
+    )
 
     st.caption("Incident history, detailed risk analysis and downloadable evidence")
 
@@ -1795,7 +1845,7 @@ elif nav == "Incident Report":
 
     try:
 
-        incidents = fetch_recent_incidents(limit=100)
+        incidents = fetch_recent_incidents(limit=None)
 
     except Exception as e:
 
@@ -1940,6 +1990,8 @@ elif nav == "Incident Report":
 
                 final_risk = record.get("final_risk", 0)
 
+                context_risk = record.get("context_risk", 0)
+
                 decision = record.get("decision", "UNKNOWN")
 
                 # ====================================================
@@ -1948,17 +2000,15 @@ elif nav == "Incident Report":
 
                 st.markdown(
                     f"""
-                    <div class="vc-card"
-                         style="margin:1rem 0;">
+                    <div class="vc-card" style="margin:1rem 0;">
                         <div style="
                             color:#8fd7cd;
                             font-size:.7rem;
                             text-transform:uppercase;
                             letter-spacing:.1em;
                         ">
-                            Incident Report
+                            Incident ID
                         </div>
-
                         <div style="
                             color:#ffffff;
                             font-size:1.7rem;
@@ -1968,14 +2018,7 @@ elif nav == "Incident Report":
                             {incident_id_value}
                         </div>
 
-                        <div style="
-                            color:#a9cbc7;
-                            margin-top:.4rem;
-                        ">
-                            Date: {date_value}
-                            &nbsp;&nbsp;|&nbsp;&nbsp;
-                            Time: {time_value}
-                        </div>
+                        
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -2032,7 +2075,7 @@ elif nav == "Incident Report":
 
                 st.subheader("Risk Analysis Breakdown")
 
-                score_cols = st.columns(4)
+                score_cols = st.columns(5)
 
                 with score_cols[0]:
                     st.metric(
@@ -2046,6 +2089,9 @@ elif nav == "Incident Report":
                     st.metric("Behavior Risk", f"{record.get('behavior_risk', 0)}/100")
 
                 with score_cols[3]:
+                    st.metric("Context Risk", f"{record.get('context_risk', 0)}/100")
+
+                with score_cols[4]:
                     st.metric("Final Risk", f"{final_risk}/100")
 
                 # ====================================================
@@ -2076,29 +2122,7 @@ elif nav == "Incident Report":
 
                     st.info("No transaction signals were stored.")
 
-                # ====================================================
-                # Voice analysis
-                # ====================================================
-
-                st.subheader("Voice / Scam Analysis")
-
-                voice_transcript = record.get("voice_transcript", "")
-
-                if voice_transcript:
-
-                    st.markdown("**Transcript Used for Analysis**")
-
-                    st.text_area(
-                        "Voice Transcript",
-                        value=voice_transcript,
-                        height=180,
-                        disabled=True,
-                        key=f"voice_report_{incident_id_value}",
-                    )
-
-                else:
-
-                    st.info("No voice transcript was stored for this incident.")
+                
 
                 # ====================================================
                 # Behavior signals
@@ -2127,6 +2151,27 @@ elif nav == "Incident Report":
                 else:
 
                     st.info("No behavioral signals were stored.")
+
+                # ====================================================
+                # Context signals
+                # ====================================================
+
+                context_signals = parse_stored_value(
+                    record.get("context_signals"), {}
+                )
+
+                st.subheader("Context Analysis")
+
+                if context_signals:
+                    if isinstance(context_signals, dict):
+                        for key, value in context_signals.items():
+                            st.markdown(f'**{key.replace("_", " ").title()}**')
+                            st.write(value)
+                    else:
+                        st.write(context_signals)
+                else:
+                    st.info("No context signals were stored.")
+                
 
                 # ====================================================
                 # Detection reasons
