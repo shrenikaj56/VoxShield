@@ -1,6 +1,7 @@
 import os
 import tempfile
 import ast
+import base64
 from pathlib import Path
 from textwrap import dedent
 
@@ -17,13 +18,20 @@ from modules.voice_analyzer import analyze_voice
 
 load_dotenv()
 
-st.set_page_config(page_title="VoxShield", page_icon="🛡️", layout="wide")
+st.set_page_config(
+    page_title="VoxShield",
+    page_icon="assets/Voxshield.png",
+    layout="wide"
+)
 
 st.markdown(
     """
 <style>
 .stApp { background: radial-gradient(circle at 10% 10%, #173b45, #071b22 80%, #020d10); color:#eefcfb; }
 [data-testid="stSidebar"] { background: linear-gradient(180deg,#10292e,#061b21); }
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}
 .block-container { padding-top: 2rem; }
 
 .vox-main-title { font-size:2.2rem; font-weight:800; color:#fff; }
@@ -305,10 +313,38 @@ PAGES = [
 ]
 ensure_database()
 
+
 # Login
 if not st.session_state["authenticated"]:
-    st.title("VoxShield")
-    st.caption("Fraud Intelligence Console")
+
+    logo_path = Path("assets/Voxshield.png")
+
+    with open(logo_path, "rb") as logo_file:
+        logo_base64 = base64.b64encode(logo_file.read()).decode()
+
+    st.markdown(
+        f"""
+        <div style="
+            margin-bottom:0.5rem;
+            padding-top:1rem;
+            margin-left:0;
+        ">
+            <img
+                #src="data:image/png;base64,{logo_base64}"
+                width="65"
+                style="display:block;"
+            >
+            <span style="
+                color:#ffffff;
+                font-size:2.2rem;
+                font-weight:800;
+            ">VoxShield</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.caption("  Real-Time  UPI  and  Voice-Cloning  Fraud  Intervention")
 
     with st.form("voxshield_login"):
         operator_id = st.text_input("Operator ID", value="operator_demo")
@@ -325,12 +361,153 @@ if not st.session_state["authenticated"]:
                 st.rerun()
             else:
                 st.error("Authentication failed")
+    
+        # =========================================================
+    # LOGIN PAGE SIDEBAR ONLY
+    # =========================================================
+    with st.sidebar:
 
+        st.image("assets/Voxshield.png", width=90)
+
+        st.markdown(
+            """
+            <div style="
+                color:#ffffff;
+                font-size:1.15rem;
+                font-weight:800;
+                letter-spacing:.08em;
+                margin-top:.3rem;
+            ">
+                VOXSHIELD
+            </div>
+
+            <div style="
+                color:#77ead2;
+                font-size:.68rem;
+                font-weight:700;
+                letter-spacing:.08em;
+                text-transform:uppercase;
+                margin-top:.35rem;
+            ">
+                Security Intelligence Platform
+            </div>
+
+            <div style="
+                height:1px;
+                background:rgba(119,234,210,.25);
+                margin:1.2rem 0 1.4rem 0;
+            "></div>
+
+            <div style="
+                color:#77ead2;
+                font-size:.72rem;
+                font-weight:800;
+                letter-spacing:.12em;
+                margin-bottom:1rem;
+            ">
+                PROTECTION STATUS
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Risk Engine
+        st.markdown(
+            """
+            <div style="
+                border:1px solid rgba(119,234,210,.25);
+                border-radius:12px;
+                padding:1rem;
+                background:rgba(9,32,38,.96);
+                margin-bottom:.8rem;
+            ">
+                <div style="
+                    color:#77ead2;
+                    font-size:.78rem;
+                    font-weight:800;
+                ">
+                    <span style="color:#77ead2;">●</span> Risk Engine
+                </div>
+                <div style="
+                    color:#ffffff;
+                    font-size:.9rem;
+                    font-weight:700;
+                    margin-top:.5rem;
+                    padding-left:.9rem;
+                ">
+                    ACTIVE
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Threat Detection
+        st.markdown(
+            """
+            <div style="
+                border:1px solid rgba(119,234,210,.25);
+                border-radius:12px;
+                padding:1rem;
+                background:rgba(9,32,38,.96);
+                margin-bottom:.8rem;
+            ">
+                <div style="
+                    color:#77ead2;
+                    font-size:.78rem;
+                    font-weight:800;
+                ">
+                    <span style="color:#77ead2;">●</span> Threat Detection
+                </div>
+                <div style="
+                    color:#ffffff;
+                    font-size:.9rem;
+                    font-weight:700;
+                    margin-top:.5rem;
+                    padding-left:.9rem;
+                ">
+                    ONLINE
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Secure Processing
+        st.markdown(
+            """
+            <div style="
+                border:1px solid rgba(119,234,210,.25);
+                border-radius:12px;
+                padding:1rem;
+                background:rgba(9,32,38,.96);
+            ">
+                <div style="
+                    color:#77ead2;
+                    font-size:.78rem;
+                    font-weight:800;
+                ">
+                    <span style="color:#77ead2;">●</span> Secure Processing
+                </div>
+                <div style="
+                    color:#ffffff;
+                    font-size:.9rem;
+                    font-weight:700;
+                    margin-top:.5rem;
+                    padding-left:.9rem;
+                ">
+                    ENABLED
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        
     st.stop()
 
 # Sidebar
 with st.sidebar:
-    st.markdown('<div style="font-size:48px;">🛡️</div>', unsafe_allow_html=True)
+    st.image("assets/Voxshield.png", width=90)
     st.title("VoxShield")
     st.caption("Real-Time UPI and Voice-Cloning Fraud Intervention")
     if st.button("Unlock Console"):
@@ -651,6 +828,8 @@ elif nav == "Secure Payment":
 
         if final_level in ("MEDIUM", "HIGH"):
             payment_incident_id = incident_id()
+
+            
 
             payment_record = {
                 "incident_id": payment_incident_id,
@@ -2165,6 +2344,10 @@ elif nav == "Incident Report":
                 if context_signals:
                     if isinstance(context_signals, dict):
                         for key, value in context_signals.items():
+
+                            if key == "reasons":
+                                continue
+
                             st.markdown(f'**{key.replace("_", " ").title()}**')
                             st.write(value)
                     else:
@@ -2184,12 +2367,53 @@ elif nav == "Incident Report":
                 if reasons:
 
                     if isinstance(reasons, dict):
-
                         for category, values in reasons.items():
 
                             st.markdown(f"### {str(category).title()} Risk")
 
-                            if isinstance(values, list):
+                            if str(category).lower() == "context":
+
+                                context_reasons = []
+
+                                # Use the context reasons already stored in context_signals
+                                if isinstance(context_signals, dict):
+
+                                    stored_context_reasons = context_signals.get("reasons", [])
+
+                                    if isinstance(stored_context_reasons, list):
+                                        context_reasons = stored_context_reasons
+                                    elif stored_context_reasons:
+                                        context_reasons = [stored_context_reasons]
+
+                                # If context reasons are empty, derive them from active signals
+                                if not context_reasons and isinstance(context_signals, dict):
+
+                                    signals = context_signals.get("signals", {})
+
+                                    context_labels = {
+                                        "suspicious_call": "Suspicious active call",
+                                        "screen_sharing": "Screen sharing active",
+                                        "remote_control": "Remote-control session detected",
+                                        "unknown_caller": "Unknown caller / caller not recognized",
+                                    }
+
+                                    for signal_name, active in signals.items():
+
+                                        if active and signal_name in context_labels:
+                                            context_reasons.append(
+                                                context_labels[signal_name]
+                                            )
+
+                                if context_reasons:
+
+                                    for value in context_reasons:
+                                        st.markdown(f"- {value}")
+
+                                else:
+
+                                    st.markdown("- No contextual risk indicators detected.")
+
+                            elif isinstance(values, list):
 
                                 for value in values:
                                     st.markdown(f"- {value}")
