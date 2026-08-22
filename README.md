@@ -24,7 +24,9 @@ Then the product fuses those scores and outputs a decision:
 
 - LOW → allow
 - MEDIUM → warn + verify
-- HIGH → block + evidence report
+- HIGH → block + warn+verify
+  
+- Generates evidence report
 
 ## Architecture
 
