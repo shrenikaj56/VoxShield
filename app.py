@@ -28,11 +28,134 @@ st.markdown(
     """
 <style>
 .stApp { background: radial-gradient(circle at 10% 10%, #173b45, #071b22 80%, #020d10); color:#eefcfb; }
+[data-testid="stHeader"], .stApp > header { display:none !important; }
 [data-testid="stSidebar"] { background: linear-gradient(180deg,#10292e,#061b21); }
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+    color:#e5f7f4 !important;
+}
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+    color:#9fc6c1 !important;
+}
+[data-testid="stSidebar"] [role="radio"] {
+    color:#d9efeb !important;
+    border-radius:8px;
+}
+[data-testid="stSidebar"] [role="radio"] p {
+    color:#d9efeb !important;
+    font-size:.88rem !important;
+}
+[data-testid="stSidebar"] [role="radio"][aria-checked="true"] {
+    background:rgba(119,234,210,.12) !important;
+}
+[data-testid="stSidebar"] [role="radio"][aria-checked="true"] p {
+    color:#77ead2 !important;
+    font-weight:800 !important;
+}
 [data-testid="stSidebarNav"] {
     display: none !important;
 }
 .block-container { padding-top: 2rem; }
+
+/* Keep light Streamlit input surfaces readable on the dark console. */
+[data-testid="stFileUploader"] label,
+[data-testid="stTextArea"] label,
+[data-testid="stTextInput"] label {
+    color:#dff5f1 !important;
+    font-size:.9rem !important;
+    font-weight:700 !important;
+}
+[data-testid="stFileUploader"] section {
+    background:#edf2f7 !important;
+    border:1px solid #8bded0 !important;
+    border-radius:8px !important;
+}
+[data-testid="stFileUploader"] section small,
+[data-testid="stFileUploader"] section span {
+    color:#526b78 !important;
+    font-size:.8rem !important;
+}
+[data-testid="stFileUploader"] section button {
+    background:#087f70 !important;
+    color:#ffffff !important;
+    border:1px solid #087f70 !important;
+    font-weight:800 !important;
+    border-radius:7px !important;
+}
+[data-testid="stFileUploader"] section button:hover {
+    background:#0aa18e !important;
+    border-color:#0aa18e !important;
+}
+[data-testid="stTextArea"] textarea {
+    color:#17343b !important;
+    -webkit-text-fill-color:#17343b !important;
+    background:#f1f4f8 !important;
+    border:1px solid #8bded0 !important;
+    font-size:1rem !important;
+    line-height:1.6 !important;
+}
+[data-testid="stTextArea"] textarea::placeholder {
+    color:#607887 !important;
+    -webkit-text-fill-color:#607887 !important;
+    opacity:1 !important;
+}
+[data-testid="stTextArea"] [data-testid="stWidgetLabel"] p,
+[data-testid="stFileUploader"] [data-testid="stWidgetLabel"] p {
+    color:#dff5f1 !important;
+    font-size:.9rem !important;
+}
+.stCaption {
+    color:#b8d5d1 !important;
+    font-size:.85rem !important;
+}
+
+/* High-contrast content for analysis and monitoring views. */
+.stMarkdown p,
+.stMarkdown li,
+.stMarkdown strong,
+[data-testid="stText"] p,
+[data-testid="stMetricLabel"] p {
+    color:#e7f7f4 !important;
+}
+[data-testid="stMetric"] {
+    background:rgba(9,32,38,.96) !important;
+    border:1px solid rgba(119,234,210,.32) !important;
+    border-radius:12px !important;
+    padding:1rem !important;
+}
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] * {
+    color:#9edbd2 !important;
+    font-size:.82rem !important;
+    font-weight:700 !important;
+}
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] * {
+    color:#ffffff !important;
+    font-size:1.5rem !important;
+    font-weight:800 !important;
+}
+[data-testid="stMetricDelta"] { color:#bce8df !important; }
+[data-testid="stExpander"] {
+    background:rgba(9,32,38,.9) !important;
+    border:1px solid rgba(119,234,210,.3) !important;
+}
+[data-testid="stCodeBlock"] {
+    border:1px solid rgba(119,234,210,.28) !important;
+    border-radius:10px !important;
+}
+.incident-card-title {
+    color:#8fd7cd;
+    font-size:.8rem;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+}
 
 .vox-main-title { font-size:2.2rem; font-weight:800; color:#fff; }
 
@@ -510,8 +633,6 @@ with st.sidebar:
     st.image("assets/Voxshield.png", width=90)
     st.title("VoxShield")
     st.caption("Real-Time UPI and Voice-Cloning Fraud Intervention")
-    if st.button("Unlock Console"):
-        st.session_state["operator_access"] = True
     nav = st.radio(
         "Navigation",
         PAGES,
@@ -522,6 +643,11 @@ with st.sidebar:
         ),
     )
     st.session_state["nav"] = nav
+
+st.markdown(
+    f'''<div style="color:#77ead2;font-size:.85rem;font-weight:800;letter-spacing:.08em;margin:1rem 0;">● ACTIVE PROTECTION</div>''',
+    unsafe_allow_html=True,
+)
 
 
 def save_last_result(result, amount=0, beneficiary="Astra Mart"):
@@ -2254,24 +2380,25 @@ elif nav == "Incident Report":
 
                 st.subheader("Risk Analysis Breakdown")
 
-                score_cols = st.columns(5)
+                with st.container(border=True):
+                    score_cols = st.columns(5)
 
-                with score_cols[0]:
-                    st.metric(
-                        "Transaction Risk", f"{record.get('transaction_risk', 0)}/100"
-                    )
+                    with score_cols[0]:
+                        st.metric(
+                            "Transaction Risk", f"{record.get('transaction_risk', 0)}/100"
+                        )
 
-                with score_cols[1]:
-                    st.metric("Voice Risk", f"{record.get('voice_risk', 0)}/100")
+                    with score_cols[1]:
+                        st.metric("Voice Risk", f"{record.get('voice_risk', 0)}/100")
 
-                with score_cols[2]:
-                    st.metric("Behavior Risk", f"{record.get('behavior_risk', 0)}/100")
+                    with score_cols[2]:
+                        st.metric("Behavior Risk", f"{record.get('behavior_risk', 0)}/100")
 
-                with score_cols[3]:
-                    st.metric("Context Risk", f"{record.get('context_risk', 0)}/100")
+                    with score_cols[3]:
+                        st.metric("Context Risk", f"{record.get('context_risk', 0)}/100")
 
-                with score_cols[4]:
-                    st.metric("Final Risk", f"{final_risk}/100")
+                    with score_cols[4]:
+                        st.metric("Final Risk", f"{final_risk}/100")
 
                 # ====================================================
                 # Transaction signals
@@ -2283,23 +2410,26 @@ elif nav == "Incident Report":
 
                 st.subheader("Transaction Risk Signals")
 
-                if transaction_features:
+                with st.container(border=True):
+                    if transaction_features:
 
-                    if isinstance(transaction_features, dict):
+                        if isinstance(transaction_features, dict):
 
-                        for key, value in transaction_features.items():
+                            for key, value in transaction_features.items():
 
-                            st.markdown(f'**{key.replace("_", " ").title()}**')
+                                with st.container(border=True):
+                                    st.markdown(
+                                        f'**{key.replace("_", " ").title()}**'
+                                    )
+                                    st.write(value)
 
-                            st.write(value)
+                        else:
+
+                            st.write(transaction_features)
 
                     else:
 
-                        st.write(transaction_features)
-
-                else:
-
-                    st.info("No transaction signals were stored.")
+                        st.info("No transaction signals were stored.")
 
                 
 
@@ -2313,23 +2443,26 @@ elif nav == "Incident Report":
 
                 st.subheader("Behavioral Analysis")
 
-                if behavior_signals:
+                with st.container(border=True):
+                    if behavior_signals:
 
-                    if isinstance(behavior_signals, dict):
+                        if isinstance(behavior_signals, dict):
 
-                        for key, value in behavior_signals.items():
+                            for key, value in behavior_signals.items():
 
-                            st.markdown(f'**{key.replace("_", " ").title()}**')
+                                with st.container(border=True):
+                                    st.markdown(
+                                        f'**{key.replace("_", " ").title()}**'
+                                    )
+                                    st.write(value)
 
-                            st.write(value)
+                        else:
+
+                            st.write(behavior_signals)
 
                     else:
 
-                        st.write(behavior_signals)
-
-                else:
-
-                    st.info("No behavioral signals were stored.")
+                        st.info("No behavioral signals were stored.")
 
                 # ====================================================
                 # Context signals
@@ -2341,19 +2474,23 @@ elif nav == "Incident Report":
 
                 st.subheader("Context Analysis")
 
-                if context_signals:
-                    if isinstance(context_signals, dict):
-                        for key, value in context_signals.items():
+                with st.container(border=True):
+                    if context_signals:
+                        if isinstance(context_signals, dict):
+                            for key, value in context_signals.items():
 
-                            if key == "reasons":
-                                continue
+                                if key == "reasons":
+                                    continue
 
-                            st.markdown(f'**{key.replace("_", " ").title()}**')
-                            st.write(value)
+                                with st.container(border=True):
+                                    st.markdown(
+                                        f'**{key.replace("_", " ").title()}**'
+                                    )
+                                    st.write(value)
+                        else:
+                            st.write(context_signals)
                     else:
-                        st.write(context_signals)
-                else:
-                    st.info("No context signals were stored.")
+                        st.info("No context signals were stored.")
                 
 
                 # ====================================================
@@ -2364,76 +2501,78 @@ elif nav == "Incident Report":
 
                 st.subheader("Why Was This Incident Flagged?")
 
-                if reasons:
+                with st.container(border=True):
+                    if reasons:
 
-                    if isinstance(reasons, dict):
-                        for category, values in reasons.items():
+                        if isinstance(reasons, dict):
+                            for category, values in reasons.items():
 
-                            st.markdown(f"### {str(category).title()} Risk")
+                                with st.container(border=True):
+                                    st.markdown(f"### {str(category).title()} Risk")
 
-                            if str(category).lower() == "context":
+                                    if str(category).lower() == "context":
 
-                                context_reasons = []
+                                        context_reasons = []
 
                                 # Use the context reasons already stored in context_signals
-                                if isinstance(context_signals, dict):
+                                        if isinstance(context_signals, dict):
 
-                                    stored_context_reasons = context_signals.get("reasons", [])
+                                            stored_context_reasons = context_signals.get("reasons", [])
 
-                                    if isinstance(stored_context_reasons, list):
-                                        context_reasons = stored_context_reasons
-                                    elif stored_context_reasons:
-                                        context_reasons = [stored_context_reasons]
+                                            if isinstance(stored_context_reasons, list):
+                                                context_reasons = stored_context_reasons
+                                            elif stored_context_reasons:
+                                                context_reasons = [stored_context_reasons]
 
                                 # If context reasons are empty, derive them from active signals
-                                if not context_reasons and isinstance(context_signals, dict):
+                                        if not context_reasons and isinstance(context_signals, dict):
 
-                                    signals = context_signals.get("signals", {})
+                                            signals = context_signals.get("signals", {})
 
-                                    context_labels = {
-                                        "suspicious_call": "Suspicious active call",
-                                        "screen_sharing": "Screen sharing active",
-                                        "remote_control": "Remote-control session detected",
-                                        "unknown_caller": "Unknown caller / caller not recognized",
-                                    }
+                                            context_labels = {
+                                                "suspicious_call": "Suspicious active call",
+                                                "screen_sharing": "Screen sharing active",
+                                                "remote_control": "Remote-control session detected",
+                                                "unknown_caller": "Unknown caller / caller not recognized",
+                                            }
 
-                                    for signal_name, active in signals.items():
+                                            for signal_name, active in signals.items():
 
-                                        if active and signal_name in context_labels:
-                                            context_reasons.append(
-                                                context_labels[signal_name]
-                                            )
+                                                if active and signal_name in context_labels:
+                                                    context_reasons.append(
+                                                        context_labels[signal_name]
+                                                    )
 
-                                if context_reasons:
+                                        if context_reasons:
 
-                                    for value in context_reasons:
-                                        st.markdown(f"- {value}")
+                                            for value in context_reasons:
+                                                st.markdown(f"- {value}")
 
-                                else:
+                                        else:
 
-                                    st.markdown("- No contextual risk indicators detected.")
+                                            st.markdown("- No contextual risk indicators detected.")
 
-                            elif isinstance(values, list):
+                                    elif isinstance(values, list):
 
-                                for value in values:
-                                    st.markdown(f"- {value}")
+                                        for value in values:
+                                            st.markdown(f"- {value}")
 
-                            else:
+                                    else:
 
-                                st.markdown(f"- {values}")
+                                        st.markdown(f"- {values}")
 
-                    elif isinstance(reasons, list):
+                        elif isinstance(reasons, list):
 
-                        for reason in reasons:
-                            st.markdown(f"- {reason}")
+                            for reason in reasons:
+                                st.markdown(f"- {reason}")
+
+                        else:
+
+                            st.write(reasons)
 
                     else:
 
-                        st.write(reasons)
-
-                else:
-
-                    st.success("No additional risk reasons were stored.")
+                        st.success("No additional risk reasons were stored.")
 
                 # ====================================================
                 # PDF report
