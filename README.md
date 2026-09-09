@@ -1,6 +1,8 @@
 # VoxShield
 
-VoxShield is a software-only hackathon prototype that simulates end-to-end protection for UPI-style payment transactions by combining transaction context, simulated behavioral signals, and voice/scam analysis into one explainable risk decision.
+VoxShield is a platform that simulates end-to-end protection for UPI-style payment transactions by combining transaction context, simulated behavioral signals, and voice/scam analysis into one explainable risk decision.
+
+# Live Demo - https://voxshield-ejr5hu9jmeiu7iowh7m35k.streamlit.app/
 
 ## Project Overview
 
